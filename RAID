@@ -1,0 +1,92 @@
+game.StarterGui:SetCore("SendNotification", {
+    Title = "CẢNH BÁO !";
+    Text = "Chỉ nên BẬT RAID trong KHU VỰC RAID, nếu không sẽ gây LAG !";
+    Duration = 15;
+})
+game.StarterGui:SetCore("SendNotification", {
+    Title = "WARNING !";
+    Text = "Only ENABLE RAID in RAID ARENA, otherwise it will cause LAG !";
+    Duration = 15;
+})
+local ScreenGui = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local CloseButton = Instance.new("TextButton")
+local RaidButton = Instance.new("TextButton")
+
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+Frame.BackgroundColor3 = Color3.fromRGB(139, 69, 19) -- Màu nâu
+Frame.Size = UDim2.new(0, 200, 0, 100) -- Kích thước menu
+Frame.Position = UDim2.new(0, 10, 0, 10) -- Vị trí menu
+Frame.Active = true
+Frame.Draggable = true
+Frame.Parent = ScreenGui
+
+CloseButton.Size = UDim2.new(0, 20, 0, 20)
+CloseButton.Position = UDim2.new(0, 180, 0, 0) -- Vị trí nút xoá
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Màu đỏ
+CloseButton.Text = "X"
+CloseButton.Parent = Frame
+
+RaidButton.Size = UDim2.new(0, 180, 0, 40)
+RaidButton.Position = UDim2.new(0, 10, 0, 30) -- Vị trí nút "Raid/Stop raid"
+RaidButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Màu xanh cho nút "Raid"
+RaidButton.Text = "Raid"
+RaidButton.Parent = Frame
+
+-- Bán kính tiêu diệt và thông số khác
+local killRadius = 1000 -- Bán kính tiêu diệt
+local interval = 5 -- Khoảng thời gian giữa các lần kill
+local maxKillCount = 5 -- Số lượng NPC tối đa để kill mỗi lần
+
+local isRaidActive = false
+
+-- Hàm để tiêu diệt NPC
+local function killNearbyNPCs()
+    local killedCount = 0
+    for _, npc in pairs(workspace:GetDescendants()) do
+        if npc:IsA("Model") and npc:FindFirstChild("Humanoid") and npc:FindFirstChild("HumanoidRootPart") then
+            local distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - npc.HumanoidRootPart.Position).Magnitude
+            if distance <= killRadius and not game.Players:GetPlayerFromCharacter(npc) then
+                npc.Humanoid:TakeDamage(npc.Humanoid.MaxHealth) -- Kill NPC
+                killedCount = killedCount + 1
+                if killedCount >= maxKillCount then
+                    break -- Dừng lại sau khi đã kill đủ số lượng
+                end
+            end
+        end
+    end
+end
+
+-- Kích hoạt raid
+RaidButton.MouseButton1Click:Connect(function()
+    isRaidActive = not isRaidActive
+    if isRaidActive then
+        RaidButton.Text = "Stop raid"
+        -- Tạo thông báo khi script được kích hoạt
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Start raid !",
+            Text = "Good luck !",
+            Duration = 5
+        })
+        
+        while isRaidActive do
+            killNearbyNPCs()
+            wait(interval) -- Chờ trước khi kill NPC tiếp theo
+        end
+
+    else
+        RaidButton.Text = "Raid"
+        -- Tạo thông báo khi script dừng
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Raid Stopped !",
+            Text = "Good luck !",
+            Duration = 3
+        })
+    end
+end)
+
+-- Xoá menu
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
