@@ -1,13 +1,14 @@
 game.StarterGui:SetCore("SendNotification", {
-    Title = "CẢNH BÁO !";
-    Text = "Chỉ nên BẬT RAID trong KHU VỰC RAID, nếu không sẽ gây LAG !";
-    Duration = 15;
+    Title = "CẢNH BÁO !",
+    Text = "Chỉ nên BẬT RAID trong KHU VỰC RAID, nếu không sẽ gây LAG !",
+    Duration = 15,
 })
 game.StarterGui:SetCore("SendNotification", {
-    Title = "WARNING !";
-    Text = "Only ENABLE RAID in RAID ARENA, otherwise it will cause LAG !";
-    Duration = 15;
+    Title = "WARNING !",
+    Text = "Only ENABLE RAID in RAID ARENA, otherwise it will cause LAG !",
+    Duration = 15,
 })
+
 local ScreenGui = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
 local CloseButton = Instance.new("TextButton")
@@ -15,24 +16,62 @@ local RaidButton = Instance.new("TextButton")
 
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
+-- Thuộc tính Frame
 Frame.BackgroundColor3 = Color3.fromRGB(139, 69, 19) -- Màu nâu
 Frame.Size = UDim2.new(0, 200, 0, 100) -- Kích thước menu
 Frame.Position = UDim2.new(0, 10, 0, 10) -- Vị trí menu
 Frame.Active = true
-Frame.Draggable = true
+Frame.Draggable = false -- Tắt thuộc tính mặc định kéo thả
 Frame.Parent = ScreenGui
 
+-- Thuộc tính CloseButton
 CloseButton.Size = UDim2.new(0, 20, 0, 20)
 CloseButton.Position = UDim2.new(0, 180, 0, 0) -- Vị trí nút xoá
 CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Màu đỏ
 CloseButton.Text = "X"
 CloseButton.Parent = Frame
 
+-- Thuộc tính RaidButton
 RaidButton.Size = UDim2.new(0, 180, 0, 40)
 RaidButton.Position = UDim2.new(0, 10, 0, 30) -- Vị trí nút "Raid/Stop raid"
 RaidButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Màu xanh cho nút "Raid"
 RaidButton.Text = "Raid"
 RaidButton.Parent = Frame
+
+-- Chức năng kéo thả menu
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+Frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = Frame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+Frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
 
 -- Bán kính tiêu diệt và thông số khác
 local killRadius = 1000 -- Bán kính tiêu diệt
@@ -67,7 +106,7 @@ RaidButton.MouseButton1Click:Connect(function()
         game.StarterGui:SetCore("SendNotification", {
             Title = "Start raid !",
             Text = "Good luck !",
-            Duration = 5
+            Duration = 5,
         })
         
         while isRaidActive do
@@ -81,7 +120,7 @@ RaidButton.MouseButton1Click:Connect(function()
         game.StarterGui:SetCore("SendNotification", {
             Title = "Raid Stopped !",
             Text = "Good luck !",
-            Duration = 3
+            Duration = 3,
         })
     end
 end)
