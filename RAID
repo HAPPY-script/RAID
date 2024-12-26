@@ -103,7 +103,7 @@ local function teleportToPriorityObject()
     else
         game.StarterGui:SetCore("SendNotification", {
             Title = "Thông báo",
-            Text = "Không tìm thấy vật thể ưu tiên!",
+            Text = "Không tìm thấy đảo",
             Duration = 5,
         })
     end
