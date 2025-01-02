@@ -1,31 +1,20 @@
 game.StarterGui:SetCore("SendNotification", {
-    Title = "CẢNH BÁO !",
-    Text = "Chỉ nên BẬT RAID trong KHU VỰC RAID, nếu không sẽ gây LAG !",
-    Duration = 15,
-})
-game.StarterGui:SetCore("SendNotification", {
-    Title = "WARNING !",
-    Text = "Only ENABLE RAID in RAID ARENA, otherwise it will cause LAG !",
+    Title = "Create by HAPPY script✅",
+    Text = "Good luck! 🍀",
     Duration = 15,
 })
 
 local ScreenGui = Instance.new("ScreenGui")
 local MenuFrame = Instance.new("Frame")
 local CloseButton = Instance.new("TextButton")
-local RaidButton = Instance.new("TextButton")
-local AutoIslandButton = Instance.new("TextButton")
-local NotificationFrame = Instance.new("Frame")
-local NotificationTitle = Instance.new("TextLabel")
+local StartKillButton = Instance.new("TextButton")
 
-local isRaiding = false
-local killRadius = 3000
-local raidInterval = 5 -- Thời gian mỗi lần kill (giây)
-local lastRaidTime = 0 -- Lưu thời gian lần raid trước
+local AutoKill = false -- Trạng thái bật/tắt auto kill
 
+-- Tạo GUI
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Menu chính
-MenuFrame.Size = UDim2.new(0, 250, 0, 170)
+MenuFrame.Size = UDim2.new(0, 250, 0, 120)
 MenuFrame.Position = UDim2.new(0, 10, 0, 10)
 MenuFrame.BackgroundColor3 = Color3.fromRGB(139, 69, 19) -- Màu nâu
 MenuFrame.BackgroundTransparency = 0.2
@@ -39,131 +28,63 @@ CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 CloseButton.Text = "X"
 CloseButton.Parent = MenuFrame
 
-RaidButton.Size = UDim2.new(0, 150, 0, 50)
-RaidButton.Position = UDim2.new(0, 50, 0, 50)
-RaidButton.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
-RaidButton.Text = "Raid"
-RaidButton.Parent = MenuFrame
+StartKillButton.Size = UDim2.new(0, 120, 0, 50) -- Điều chỉnh độ dài trục X
+StartKillButton.Position = UDim2.new(0, 65, 0, 50)
+StartKillButton.BackgroundColor3 = Color3.fromRGB(255, 215, 0) -- Màu vàng
+StartKillButton.Text = "Start Auto Kill"
+StartKillButton.Parent = MenuFrame
 
-AutoIslandButton.Size = UDim2.new(0, 150, 0, 50)
-AutoIslandButton.Position = UDim2.new(0, 50, 0, 110)
-AutoIslandButton.BackgroundColor3 = Color3.fromRGB(0, 191, 255)
-AutoIslandButton.Text = "Next Island"
-AutoIslandButton.Parent = MenuFrame
-
--- Thông báo ở góc phải
-NotificationFrame.Size = UDim2.new(0, 200, 0, 50)
-NotificationFrame.Position = UDim2.new(1, -210, 1, -60)
-NotificationFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-NotificationFrame.BackgroundTransparency = 0.5
-NotificationFrame.Visible = false
-NotificationFrame.Parent = ScreenGui
-
-NotificationTitle.Size = UDim2.new(1, 0, 1, 0)
-NotificationTitle.Text = "Raid in progress"
-NotificationTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-NotificationTitle.BackgroundTransparency = 1
-NotificationTitle.Font = Enum.Font.SourceSansBold
-NotificationTitle.TextScaled = true
-NotificationTitle.Parent = NotificationFrame
-
+-- Chức năng đóng menu
 CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
--- Tên các vật thể ưu tiên
-local priorityObjects = { "Island 5", "Island 4", "Island 3", "Island 2", "PlayerSpawner" }
-
--- Hàm tìm vật thể ưu tiên
-local function findPriorityObject()
-    local closestObject = nil
-    local closestPriority = math.huge
-
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") and table.find(priorityObjects, obj.Name) then
-            local priority = table.find(priorityObjects, obj.Name)
-            if priority and priority < closestPriority then
-                closestObject = obj
-                closestPriority = priority
-            end
-        end
-    end
-    return closestObject
-end
-
--- Teleport tới vật thể ưu tiên
-local function teleportToPriorityObject()
-    local targetObject = findPriorityObject()
-    if targetObject then
-        local character = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait()
-        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-        if humanoidRootPart then
-            humanoidRootPart.CFrame = CFrame.new(targetObject.Position + Vector3.new(0, 100, 0)) -- Teleport cao hơn 100m
-        end
+-- Chức năng bật/tắt auto kill
+StartKillButton.MouseButton1Click:Connect(function()
+    AutoKill = not AutoKill
+    if AutoKill then
+        StartKillButton.Text = "Stop Auto Kill"
+        print("Auto Kill: ON")
     else
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Thông báo",
-            Text = "Không tìm thấy đảo",
-            Duration = 5,
-        })
+        StartKillButton.Text = "Start Auto Kill"
+        print("Auto Kill: OFF")
     end
-end
-
-AutoIslandButton.MouseButton1Click:Connect(function()
-    teleportToPriorityObject()
 end)
 
--- Raid logic
-local function killNPCs()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+-- Script tiêu diệt quái không lag
+local Player = game.Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local EnemyFolder = workspace:WaitForChild("Enemies") -- Thay "Enemies" bằng tên thư mục chứa quái
+local KillRange = 3000 -- Phạm vi tiêu diệt quái (3000 studs)
 
-    local npcsInRange = {}
+-- Hàm kiểm tra khoảng cách
+function GetDistance(part)
+    if part and part:IsA("BasePart") then
+        return (HumanoidRootPart.Position - part.Position).Magnitude
+    end
+    return math.huge
+end
 
-    for _, npc in pairs(workspace:GetDescendants()) do
-        if npc:IsA("Model") and npc:FindFirstChild("Humanoid") and npc:FindFirstChild("HumanoidRootPart") then
-            local humanoid = npc:FindFirstChild("Humanoid")
-            local npcRootPart = npc:FindFirstChild("HumanoidRootPart")
+-- Hàm tiêu diệt quái
+function KillEnemy(enemy)
+    local humanoid = enemy:FindFirstChild("Humanoid")
+    local rootPart = enemy:FindFirstChild("HumanoidRootPart")
+    if humanoid and rootPart and humanoid.Health > 0 then
+        humanoid.Health = 0 -- Đặt máu về 0 để tiêu diệt quái
+    end
+end
 
-            if npcRootPart and humanoidRootPart and npc ~= character then
-                local distance = (humanoidRootPart.Position - npcRootPart.Position).Magnitude
-                if distance <= killRadius and humanoid.Health > 0 then
-                    table.insert(npcsInRange, npc)
+-- Vòng lặp chính
+spawn(function()
+    while true do
+        if AutoKill then
+            for _, enemy in pairs(EnemyFolder:GetChildren()) do
+                if enemy:IsA("Model") and GetDistance(enemy:FindFirstChild("HumanoidRootPart")) <= KillRange then
+                    KillEnemy(enemy)
                 end
             end
         end
-    end
-
-    for i = 1, math.min(8, #npcsInRange) do
-        local npc = npcsInRange[i]
-        local humanoid = npc:FindFirstChild("Humanoid")
-        if humanoid and humanoid.Health > 0 then
-            humanoid.Health = 0
-        end
-    end
-end
-
-local raidLoop
-
-RaidButton.MouseButton1Click:Connect(function()
-    if isRaiding then
-        isRaiding = false
-        RaidButton.Text = "Raid"
-        NotificationFrame.Visible = false
-        if raidLoop then
-            raidLoop:Disconnect()
-        end
-    else
-        isRaiding = true
-        RaidButton.Text = "Stop"
-        NotificationFrame.Visible = true
-
-        raidLoop = game:GetService("RunService").Stepped:Connect(function()
-            if isRaiding and (tick() - lastRaidTime >= raidInterval) then
-                lastRaidTime = tick()
-                killNPCs()
-            end
-        end)
+        wait(1) -- Giảm tải bằng cách chờ 1 giây
     end
 end)
