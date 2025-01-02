@@ -1,7 +1,7 @@
 game.StarterGui:SetCore("SendNotification", {
     Title = "Create by HAPPY script✅",
     Text = "Good luck! 🍀",
-    Duration = 15,
+    Duration = 10,
 })
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -39,15 +39,28 @@ CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
+-- Tạo thông báo ở góc dưới bên phải
+local Notification = Instance.new("TextLabel")
+Notification.Size = UDim2.new(0, 200, 0, 50)
+Notification.Position = UDim2.new(1, -210, 1, -60) -- Vị trí góc dưới bên phải
+Notification.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Màu nền đen
+Notification.BackgroundTransparency = 0.5
+Notification.TextColor3 = Color3.fromRGB(255, 255, 255) -- Màu chữ trắng
+Notification.TextSize = 20
+Notification.Text = "Raid Mode: OFF"
+Notification.Visible = false -- Bắt đầu là không hiển thị
+Notification.Parent = ScreenGui
+
 -- Chức năng bật/tắt auto kill
 StartKillButton.MouseButton1Click:Connect(function()
     AutoKill = not AutoKill
     if AutoKill then
         StartKillButton.Text = "Stop Auto Kill"
-        print("Auto Kill: ON")
+        Notification.Text = "Raid Mode: ON"
+        Notification.Visible = true -- Hiển thị thông báo khi bật
     else
         StartKillButton.Text = "Start Auto Kill"
-        print("Auto Kill: OFF")
+        Notification.Visible = false -- Ẩn thông báo khi tắt
     end
 end)
 
@@ -85,6 +98,6 @@ spawn(function()
                 end
             end
         end
-        wait(0.1) -- Giảm tải bằng cách chờ 1 giây
+        wait(0.1) -- Giảm tải bằng cách chờ 0.1 giây
     end
 end)
