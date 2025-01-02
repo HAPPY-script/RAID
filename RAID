@@ -85,6 +85,6 @@ spawn(function()
                 end
             end
         end
-        wait(1) -- Giảm tải bằng cách chờ 1 giây
+        wait(0.1) -- Giảm tải bằng cách chờ 1 giây
     end
 end)
