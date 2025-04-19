@@ -26,13 +26,13 @@ frame.Draggable = true
 local toggle = Instance.new("TextButton", frame)
 toggle.Size = UDim2.new(0.8, 0, 0.4, 0)
 toggle.Position = UDim2.new(0.1, 0, 0.1, 0)
-toggle.Text = "Start"
+toggle.Text = "Start RAID"
 toggle.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 toggle.TextColor3 = Color3.new(1, 1, 1)
 
 local delete = Instance.new("TextButton", frame)
-delete.Size = UDim2.new(0.8, 0, 0.3, 0)
-delete.Position = UDim2.new(0.1, 0, 0.55, 0)
+delete.Size = UDim2.new(0.2, 0, 0.3, 0)
+delete.Position = UDim2.new(0.7, 0, 0.6, 0)
 delete.Text = "X"
 delete.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 delete.TextColor3 = Color3.new(1, 1, 1)
@@ -60,7 +60,7 @@ end)
 toggle.MouseButton1Click:Connect(function()
     running = not running
     autoClicking = running
-    toggle.Text = running and "Stop" or "Start"
+    toggle.Text = running and "Stop RAID" or "Start RAID"
 end)
 
 local function tweenTo(pos)
